@@ -32,9 +32,7 @@ impl TomboyImporter {
         let glob_pattern = pattern.to_string_lossy();
 
         for entry in glob(&glob_pattern).map_err(|_| TomboyError::MissingField("note files"))? {
-            if let Ok(file) = entry {
-                files.push(file);
-            }
+            files.push(entry?);
         }
 
         Ok(files)

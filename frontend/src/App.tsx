@@ -13,6 +13,7 @@ import { ForgotPassword } from './components/ForgotPassword';
 import { ResetPassword } from './components/ResetPassword';
 import { Profile } from './components/Profile';
 import { notesApi } from './lib/api';
+import { getVersion } from './lib/version';
 
 function AppContent() {
   const { isDarkMode, addNote, selectNote, setError } = useNoteStore();
@@ -109,6 +110,9 @@ function AppContent() {
         </div>
       </div>
       {isProfileOpen && <Profile onClose={handleProfileClose} />}
+      <footer className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0 text-center text-xs text-gray-500 dark:text-gray-400">
+        Memos RS v{getVersion()}
+      </footer>
     </div>
   );
 }

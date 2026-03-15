@@ -117,7 +117,7 @@ impl Database {
         let parent_id = &note.parent_id;
         let created_at = note.created_at.to_rfc3339();
         let updated_at = note.updated_at.to_rfc3339();
-        let parent_id_str = parent_id.as_ref().map(|s| s.as_str());
+        let parent_id_str = parent_id.as_deref();
         let is_favorite = note.is_favorite as i32;
         let is_archived = note.is_archived as i32;
         let tags = serde_json::to_string(&note.tags).unwrap_or_else(|_| "[]".to_string());
@@ -234,7 +234,7 @@ impl Database {
         note.updated_at = Utc::now();
 
         let updated_at = note.updated_at.to_rfc3339();
-        let parent_id_str = note.parent_id.as_ref().map(|s| s.as_str());
+        let parent_id_str = note.parent_id.as_deref();
         let id = note.id.clone();
         let title = note.title.clone();
         let content = note.content.clone();
@@ -654,7 +654,7 @@ impl Database {
         let parent_id = &note.parent_id;
         let created_at = note.created_at.to_rfc3339();
         let updated_at = note.updated_at.to_rfc3339();
-        let parent_id_str = parent_id.as_ref().map(|s| s.as_str());
+        let parent_id_str = parent_id.as_deref();
         let is_favorite = note.is_favorite as i32;
         let is_archived = note.is_archived as i32;
         let tags = serde_json::to_string(&note.tags).unwrap_or_else(|_| "[]".to_string());
@@ -690,7 +690,7 @@ impl Database {
         note.updated_at = Utc::now();
 
         let updated_at = note.updated_at.to_rfc3339();
-        let parent_id_str = note.parent_id.as_ref().map(|s| s.as_str());
+        let parent_id_str = note.parent_id.as_deref();
         let id = note.id.clone();
         let title = note.title.clone();
         let content = note.content.clone();

@@ -1,3 +1,4 @@
+use glob::GlobError;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -96,6 +97,8 @@ pub enum TomboyError {
     Xml(quick_xml::Error),
     #[error("Missing required field: {0}")]
     MissingField(&'static str),
+    #[error("Glob error: {0}")]
+    Glob(#[from] GlobError),
 }
 
 pub type TomboyResult<T> = Result<T, TomboyError>;

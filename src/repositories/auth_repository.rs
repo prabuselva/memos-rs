@@ -8,6 +8,12 @@ const PASSWORD_RESET_DURATION_HOURS: i64 = 1;
 
 pub struct AuthRepository;
 
+impl Default for AuthRepository {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AuthRepository {
     pub fn new() -> Self {
         Self

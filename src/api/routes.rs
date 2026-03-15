@@ -2,13 +2,14 @@ use crate::import_export::tomboy::{TomboyExporter, TomboyImporter, TomboyNote};
 use crate::models::auth_dto::{ErrorResponse, LoginRequest, LoginResponse, PasswordResetConfirm, PasswordResetRequest, RegisterRequest, RegisterResult, UpdateProfileRequest, ValidationError};
 use crate::models::{UserProfile, AuthError};
 use crate::services::auth_service::AuthService;
-use crate::{models::Note, AppState};
+use crate::{models::Note, AppState, VERSION, VERSION_SHORT};
 use axum::{
     extract::{FromRequestParts, Json, Multipart, Path, Query, State},
     http::{request::Parts, StatusCode},
     routing::{get, post, put},
     Router,
 };
+use std::env;
 use pulldown_cmark::{html, Options, Parser};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -31,7 +32,7 @@ impl FromRequestParts<Arc<AppState>> for CurrentUser {
 
         if let Some(auth_str) = auth_header {
             if auth_str.starts_with("Bearer ") {
-                let token = &auth_str[7..];
+                let token = auth_str.strip_prefix("Bearer ").unwrap();
                 let auth_service = AuthService::new();
                 
                 if let Ok(user) = auth_service.validate_session(state.db.clone(), token).await {
@@ -65,8 +66,8 @@ pub fn create_router() -> Router<Arc<AppState>> {
         .route("/import/tomboy/file", post(import_tomboy_file))
         .route("/import/tomboy/xml", post(import_tomboy_xml))
         .route("/import/tomboy/directory", post(import_tomboy_directory))
-        .route("/import/tomboy/rollback", post(rollback_import_tomboy))
         .route("/export/tomboy", get(export_tomboy))
+        .route("/version", get(version_info))
         .route("/health", get(health))
 }
 
@@ -249,6 +250,25 @@ async fn get_note_content(
 
 async fn health() -> &'static str {
     "OK - Routes loaded"
+}
+
+#[derive(serde::Serialize)]
+struct VersionInfo {
+    version: &'static str,
+    version_short: &'static str,
+    build: &'static str,
+}
+
+async fn version_info() -> (StatusCode, Json<VersionInfo>) {
+    let build_info = env!("CARGO_PKG_VERSION");
+    (
+        StatusCode::OK,
+        Json(VersionInfo {
+            version: VERSION,
+            version_short: VERSION_SHORT,
+            build: build_info,
+        }),
+    )
 }
 
 async fn rollback_import_tomboy(
@@ -470,18 +490,15 @@ async fn import_tomboy_directory(
 
     let importer = TomboyImporter::new(base_dir.to_str().unwrap_or("/tmp"));
 
-    match importer.import_all_recursive() {
-        Ok(notes) => {
-            let db = state.db.lock().await;
-            for note in notes {
-                let memo_rs_note = note.to_memo_rs_note().with_user_id(current_user.id.clone());
-                if let Ok(saved_note) = db.create_note_with_user(memo_rs_note).await {
-                    imported_count += 1;
-                    imported_ids.push(saved_note.id);
-                }
+    if let Ok(notes) = importer.import_all_recursive() {
+        let db = state.db.lock().await;
+        for note in notes {
+            let memo_rs_note = note.to_memo_rs_note().with_user_id(current_user.id.clone());
+            if let Ok(saved_note) = db.create_note_with_user(memo_rs_note).await {
+                imported_count += 1;
+                imported_ids.push(saved_note.id);
             }
         }
-        Err(_) => {}
     }
 
     (StatusCode::OK, Json(ImportResponse { imported: imported_count, note_ids: imported_ids }))

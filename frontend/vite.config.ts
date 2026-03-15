@@ -1,5 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+const pkg = readFileSync(join(__dirname, 'package.json'), 'utf8');
+const version = JSON.parse(pkg).version;
 
 export default defineConfig({
   plugins: [react()],
@@ -18,5 +23,8 @@ export default defineConfig({
     emptyOutDir: true,
     assetsDir: 'assets',
     assetsInlineLimit: 10000000,
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
   },
 });

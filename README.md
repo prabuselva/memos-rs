@@ -40,14 +40,13 @@ memos-rs is a lightweight, self-hosted note-taking application that helps you or
 Download the appropriate binary for your platform from the [Releases](https://github.com/yourusername/memos-rs/releases) page:
 
 - **Linux**: `memos-rs-linux-amd64.tar.gz`
-- **macOS**: `memos-rs-darwin-amd64.tar.gz`  
 - **Windows**: `memos-rs-windows-amd64.zip`
 
 **Installation:**
 
 ```bash
-# Linux/macOS
-tar -xzf memos-rs-*.tar.gz
+# Linux
+tar -xzf memos-rs-linux-amd64.tar.gz
 ./memos-rs
 
 # Windows (PowerShell)

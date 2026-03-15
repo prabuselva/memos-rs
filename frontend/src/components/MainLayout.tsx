@@ -1,5 +1,6 @@
 import { useNoteStore } from '../hooks/useNoteStore';
 import { NoteEditor } from './NoteEditor';
+import { Footer } from './Footer';
 
 export const MainLayout = () => {
   const { isDarkMode } = useNoteStore();
@@ -14,6 +15,7 @@ export const MainLayout = () => {
           <NoteEditor />
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

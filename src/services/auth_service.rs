@@ -9,6 +9,12 @@ pub struct AuthService {
     auth_repo: AuthRepository,
 }
 
+impl Default for AuthService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AuthService {
     pub fn new() -> Self {
         Self {

@@ -10,9 +10,11 @@ pub mod state;
 pub mod utils;
 pub mod services;
 pub mod frontend;
+pub mod version;
 
 pub use config::Config;
 pub use state::AppState;
 pub use utils::auth_utils;
 pub use services::auth_service;
 pub use frontend::create_app_router;
+pub use version::{VERSION, VERSION_SHORT};

@@ -1,5 +1,5 @@
 use clap::Parser;
-use memos_rs::{AppState, Config, create_app_router};
+use memos_rs::{AppState, Config, create_app_router, VERSION, VERSION_SHORT};
 use std::sync::Arc;
 
 use tower_http::cors::CorsLayer;
@@ -7,6 +7,7 @@ use tower_http::cors::CorsLayer;
 #[derive(Parser)]
 #[command(name = "memos-rs")]
 #[command(about = "A Joplin-like note-taking application")]
+#[command(version = VERSION)]
 struct Cli {
     /// Path to configuration file
     #[arg(short, long)]
@@ -27,6 +28,7 @@ async fn main() -> anyhow::Result<()> {
 
     let addr = format!("0.0.0.0:{}", cli.port);
     println!("Starting server on http://{}", addr);
+    println!("Version: {} (short: {})", VERSION, VERSION_SHORT);
 
     let listener = tokio::net::TcpListener::bind(&addr).await?;
     axum::serve(listener, app).await?;
