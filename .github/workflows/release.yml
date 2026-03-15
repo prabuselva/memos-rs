@@ -14,20 +14,95 @@ on:
 env:
   CARGO_TERM_COLOR: always
   NODE_VERSION: '18'
+  REGISTRY: ghcr.io
 
 jobs:
+  prepare:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      is_tag: ${{ steps.check_tag.outputs.is_tag }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get version from tag or input
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be in format vX.Y.Z (e.g., v1.0.0)"
+            exit 1
+          fi
+          echo "Valid version: $VERSION"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "is_tag=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_tag=false" >> $GITHUB_OUTPUT
+          fi
+
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+    needs: prepare
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Rust clippy
+        run: cargo clippy --workspace -- -D warnings
+
+      - name: Run Rust fmt check
+        run: cargo fmt --check
+
+      - name: Run Rust tests
+        run: cargo test --workspace --no-fail-fast
+
+      - name: Run frontend lint
+        working-directory: frontend
+        run: npm run lint
+
   build-and-release:
     name: Build and Release
     runs-on: ${{ matrix.os }}
+    needs: [prepare, lint-and-test]
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             asset_name: memos-rs-linux-amd64
-          - os: macOS-latest
-            target: x86_64-apple-darwin
-            asset_name: memos-rs-darwin-amd64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             asset_name: memos-rs-windows-amd64
@@ -35,6 +110,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -57,69 +134,89 @@ jobs:
         run: npm run build
 
       - name: Build Rust backend (embedded frontend)
-        run: cargo build --release --target ${{ matrix.target }} --features embed-frontend
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
         shell: bash
+        run: |
+          echo "::group::Building Rust backend"
+          echo "Target: ${{ matrix.target }}"
+          echo "Version: $VERSION"
+          cargo build --release --target ${{ matrix.target }} --features embed-frontend || { echo "ERROR: Build failed"; exit 1; }
+          echo "::endgroup::"
 
       - name: Create release archive
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
         shell: bash
         run: |
+          echo "::group::Debug information"
+          echo "Matrix OS: ${{ matrix.os }}"
+          echo "Target: ${{ matrix.target }}"
+          echo "Asset name: ${{ matrix.asset_name }}"
+          echo "Version: $VERSION"
+          echo "Working directory: $(pwd)"
+          echo "::endgroup::"
+          
           mkdir -p release
+          
+          echo "::group::Checking binary existence"
+          ls -la target/${{ matrix.target }}/release/memos-rs* || true
+          echo "::endgroup::"
+          
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            cp target/${{ matrix.target }}/release/memos-rs.exe release/
-            cd release
-            7z a -tzip ../${{ matrix.asset_name }}.zip memos-rs.exe
+            echo "Copying memos-rs.exe..."
+            cp target/${{ matrix.target }}/release/memos-rs.exe release/ || { echo "ERROR: Binary not found"; exit 1; }
+            echo "Creating zip archive..."
+            cd release && 7z a -tzip ../${{ matrix.asset_name }}-v${VERSION#v}.zip memos-rs.exe || exit 1
           else
-            cp target/${{ matrix.target }}/release/memos-rs release/
-            cd release
-            tar -czf ../${{ matrix.asset_name }}.tar.gz memos-rs
+            echo "Copying memos-rs..."
+            cp target/${{ matrix.target }}/release/memos-rs release/ || { echo "ERROR: Binary not found"; exit 1; }
+            echo "Creating tar.gz archive..."
+            cd release && tar -czf ../${{ matrix.asset_name }}-v${VERSION#v}.tar.gz memos-rs || exit 1
           fi
+          
+          echo "::group::Release directory contents"
           ls -la release/
-          echo "Created release archive: ${{ matrix.asset_name }}.*"
-
-      - name: Get version from tag
-        id: get_version
-        run: |
-          if [ "${{ github.event_name }}" == "push" ]; then
-            echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          fi
+          echo "::endgroup::"
+          echo "Created release archive: ${{ matrix.asset_name }}-v${VERSION#v}.*"
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ matrix.asset_name }}.*
-          tag_name: ${{ steps.get_version.outputs.version }}
-          name: Release ${{ steps.get_version.outputs.version }}
+          files: ${{ matrix.asset_name }}-v${{ needs.prepare.outputs.version }}.*
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: Release ${{ needs.prepare.outputs.version }}
           body: |
             ## Changes
             - Build for ${{ matrix.os }}
             - Embedded frontend in single binary
-            
+            - Version: ${{ needs.prepare.outputs.version }}
+
             ## Installation
             Download the appropriate asset for your platform and extract it.
-            
+
             ## Usage
             ```bash
             # Linux/macOS
-            tar -xzf ${{ matrix.asset_name }}.tar.gz
+            tar -xzf ${{ matrix.asset_name }}-v${{ needs.prepare.outputs.version }}.tar.gz
             ./memos-rs
-            
+
             # Windows
-            7z x ${{ matrix.asset_name }}.zip
+            7z x ${{ matrix.asset_name }}-v${{ needs.prepare.outputs.version }}.zip
             .\memos-rs.exe
             ```
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
 
   docker-build:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: build-and-release
+    needs: [prepare, build-and-release]
     if: startsWith(github.ref, 'refs/tags/v')
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -148,32 +245,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: Dockerfile.embedded
-
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Run Rust tests
-        run: cargo test --workspace --no-fail-fast
-
-      - name: Run frontend tests
-        working-directory: frontend
-        run: npm test || echo "No frontend tests configured"
