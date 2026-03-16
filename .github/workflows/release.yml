@@ -120,7 +120,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-          toolchain: stable
 
       - name: Install cross-compiler toolchain
         if: ${{ matrix.target == 'aarch64-unknown-linux-gnu' }}
@@ -152,12 +151,14 @@ jobs:
       - name: Build Rust backend (embedded frontend)
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+          CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER: arm-linux-gnueabihf-gcc
         shell: bash
         run: |
           echo "::group::Building Rust backend"
           echo "Target: ${{ matrix.target }}"
           echo "Version: $VERSION"
-          CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc cargo build --release --target ${{ matrix.target }} --features embed-frontend
+          cargo build --release --target ${{ matrix.target }} --features embed-frontend
           echo "::endgroup::"
 
       - name: Create release archive
