@@ -9,6 +9,13 @@ A Joplin-like note-taking application built with Rust and React. Provides a powe
 [![Axum](https://img.shields.io/badge/Axum-0.7+-blue.svg)](https://axum.rs/)
 [![React](https://img.shields.io/badge/React-19+-blue.svg)](https://react.dev/)
 
+## Demo
+
+<video width="320" height="240" controls>
+  <source src="https://github.com/prabuselva/memos-rs/blob/main/docs/memors-demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## 📝 Summary
 
 memos-rs is a lightweight, self-hosted note-taking application that helps you organize your thoughts and ideas. Built with modern web technologies, it offers a clean interface, robust authentication, and flexible import/export capabilities for migrating from other note-taking apps.
