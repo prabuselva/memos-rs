@@ -11,10 +11,7 @@ A Joplin-like note-taking application built with Rust and React. Provides a powe
 
 ## Demo
 
-<video width="320" height="240" controls>
-  <source src="https://github.com/user-attachments/assets/353f5afd-3c29-45c1-811d-12b4992584df" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[![Watch the video]()](https://github.com/user-attachments/assets/353f5afd-3c29-45c1-811d-12b4992584df)
 
 ## 📝 Summary
 
