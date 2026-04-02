@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<note version="0.3" xmlns:link="http://beatniksoftware.com/tomboy/link" xmlns:size="http://beatniksoftware.com/tomboy/size" xmlns="http://beatniksoftware.com/tomboy">
+  <title>ESP32-C3</title>
+  <text xml:space="preserve"><note-content version="0.1">ESP32-C3
+
+<datetime>Thursday, August 4, 2022, 10:27 PM</datetime>
+
+Lolin/Wemos/NodeMCU C3-Mini boards have dtr/rts issue, In Arduino platform 
+
+I compared boards.txt settings and found the trick.
+
+Find these two lines:
+
+esp32c3.serial.disableDTR=false
+esp32c3.serial.disableRTS=false
+Change them to:
+
+esp32c3.serial.disableDTR=true
+esp32c3.serial.disableRTS=true
+
+After that, Serial Monitor works perfectly with "ESP32C3 Dev Module" selected.
+
+<link:url>https://www.reddit.com/r/esp32/comments/pf61v1/esp32c3_serial_output_in_arduino_ide/</link:url>
+
+<size:large>Own Python based Serial Monitor to debug</size:large>
+I have created serial_monitor.py in CPP_Practice/python_utils repo</note-content></text>
+  <last-change-date>2022-08-04T22:30:04.7620040+08:00</last-change-date>
+  <last-metadata-change-date>2022-08-04T22:30:04.7632690+08:00</last-metadata-change-date>
+  <create-date>2022-08-04T22:27:09.7663000+08:00</create-date>
+  <cursor-position>611</cursor-position>
+  <selection-bound-position>611</selection-bound-position>
+  <width>1920</width>
+  <height>1027</height>
+  <x>0</x>
+  <y>25</y>
+  <tags>
+    <tag>system:notebook:Computer_works</tag>
+  </tags>
+  <open-on-startup>False</open-on-startup>
+</note>

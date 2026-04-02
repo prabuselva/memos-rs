@@ -1,2 +1,4 @@
 dist
-docs/opencode_session*
+docs/opencode_session
+docs/opencode_llm_integration
+docs/opencode_cot

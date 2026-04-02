@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notes>
+  <note version="0.1">
+    <title>Test Note 1</title>
+    <content>
+      <note-content>
+# Hello World
+
+This is the first test note.
+      </note-content>
+    </content>
+    <tags>
+      <tag>test</tag>
+    </tags>
+    <last-modified>2024-01-01T00:00:00Z</last-modified>
+  </note>
+  <note version="0.1">
+    <title>Test Note 2</title>
+    <content>
+      <note-content>
+# Second Note
+
+This is the second test note.
+      </note-content>
+    </content>
+    <tags>
+      <tag>demo</tag>
+    </tags>
+    <last-modified>2024-01-02T00:00:00Z</last-modified>
+  </note>
+</notes>

@@ -1,0 +1,14 @@
+{
+  "vector": [0.1, 0.2, 0.3],
+  "limit": 5,
+  "filter": {
+    "must": [
+      {
+        "key": "user_id",
+        "match": {
+          "value": "test-user"
+        }
+      }
+    ]
+  }
+}

@@ -13,7 +13,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  NODE_VERSION: '18'
+  NODE_VERSION: '24'
   REGISTRY: ghcr.io
 
 jobs:
@@ -125,13 +125,13 @@ jobs:
         if: ${{ matrix.target == 'aarch64-unknown-linux-gnu' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
       - name: Install cross-compiler toolchain
         if: ${{ matrix.target == 'armv7-unknown-linux-gnueabihf' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-linux-gnueabihf
+          sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -148,79 +148,99 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Build Rust backend (embedded frontend)
+      - name: Build Rust backend (Lite with embedded frontend)
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
           CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER: arm-linux-gnueabihf-gcc
         shell: bash
         run: |
-          echo "::group::Building Rust backend"
+          echo "::group::Building Rust backend (Lite)"
           echo "Target: ${{ matrix.target }}"
           echo "Version: $VERSION"
-          cargo build --release --target ${{ matrix.target }} --features embed-frontend
+          chmod +x build.sh
+          ./build.sh --lite --embed-frontend
           echo "::endgroup::"
 
-      - name: Create release archive
+      - name: Build Rust backend (Full with embedded frontend)
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+          CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER: arm-linux-gnueabihf-gcc
+        shell: bash
+        run: |
+          echo "::group::Building Rust backend (Full)"
+          echo "Target: ${{ matrix.target }}"
+          echo "Version: $VERSION"
+          chmod +x build.sh
+          ./build.sh --full --embed-frontend
+          echo "::endgroup::"
+
+      - name: Create release archive (Lite)
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
         shell: bash
         run: |
-          echo "::group::Debug information"
-          echo "Matrix OS: ${{ matrix.os }}"
-          echo "Target: ${{ matrix.target }}"
-          echo "Asset name: ${{ matrix.asset_name }}"
-          echo "Version: $VERSION"
-          echo "Working directory: $(pwd)"
-          echo "::endgroup::"
-          
           mkdir -p release
           
-          echo "::group::Checking binary existence"
-          ls -la target/${{ matrix.target }}/release/memos-rs* || true
-          echo "::endgroup::"
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            cp target/${{ matrix.target }}/release/memos-rs-lite.exe release/memos-rs-lite.exe || { echo "ERROR: Binary not found"; exit 1; }
+            cd release && 7z a -tzip ../${{ matrix.asset_name }}-lite-v${VERSION#v}.zip memos-rs-lite.exe
+          else
+            cp target/${{ matrix.target }}/release/memos-rs-lite release/memos-rs-lite || { echo "ERROR: Binary not found"; exit 1; }
+            cd release && tar -czf ../${{ matrix.asset_name }}-lite-v${VERSION#v}.tar.gz memos-rs-lite
+          fi
+
+      - name: Create release archive (Full)
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        shell: bash
+        run: |
+          mkdir -p release
           
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            echo "Copying memos-rs.exe..."
-            cp target/${{ matrix.target }}/release/memos-rs.exe release/ || { echo "ERROR: Binary not found"; exit 1; }
-            echo "Creating zip archive..."
-            cd release && 7z a -tzip ../${{ matrix.asset_name }}-v${VERSION#v}.zip memos-rs.exe || exit 1
+            cp target/${{ matrix.target }}/release/memos-rs.exe release/memos-rs.exe || { echo "ERROR: Binary not found"; exit 1; }
+            cd release && 7z a -tzip ../${{ matrix.asset_name }}-full-v${VERSION#v}.zip memos-rs.exe
           else
-            echo "Copying memos-rs..."
-            cp target/${{ matrix.target }}/release/memos-rs release/ || { echo "ERROR: Binary not found"; exit 1; }
-            echo "Creating tar.gz archive..."
-            cd release && tar -czf ../${{ matrix.asset_name }}-v${VERSION#v}.tar.gz memos-rs || exit 1
+            cp target/${{ matrix.target }}/release/memos-rs release/memos-rs || { echo "ERROR: Binary not found"; exit 1; }
+            cd release && tar -czf ../${{ matrix.asset_name }}-full-v${VERSION#v}.tar.gz memos-rs
           fi
-          
-          echo "::group::Release directory contents"
-          cd ..
-          ls -la .
-          echo "::endgroup::"
-          echo "Created release archive: ${{ matrix.asset_name }}-v${VERSION#v}.*"
 
-      - name: Upload release asset
+      - name: Upload release assets
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ matrix.asset_name }}-${{ needs.prepare.outputs.version }}.*
+          files: |
+            ${{ matrix.asset_name }}-lite-v${{ needs.prepare.outputs.version }}.*
+            ${{ matrix.asset_name }}-full-v${{ needs.prepare.outputs.version }}.*
           tag_name: ${{ needs.prepare.outputs.version }}
           name: Release ${{ needs.prepare.outputs.version }}
           body: |
             ## Changes
             - Build for ${{ matrix.os }}
-            - Embedded frontend in single binary
+            - Embedded frontend in both binaries
             - Version: ${{ needs.prepare.outputs.version }}
 
             ## Installation
-            Download the appropriate asset for your platform and extract it.
 
-            ## Usage
+            ### Lite Version (SQLite only)
             ```bash
             # Linux/macOS
-            tar -xzf ${{ matrix.asset_name }}-${{ needs.prepare.outputs.version }}.tar.gz
+            tar -xzf ${{ matrix.asset_name }}-lite-v${{ needs.prepare.outputs.version }}.tar.gz
+            ./memos-rs-lite
+
+            # Windows
+            7z x ${{ matrix.asset_name }}-lite-v${{ needs.prepare.outputs.version }}.zip
+            .\memos-rs-lite.exe
+            ```
+
+            ### Full Version (with Vector DB, embeddings, LLM)
+            ```bash
+            # Linux/macOS
+            tar -xzf ${{ matrix.asset_name }}-full-v${{ needs.prepare.outputs.version }}.tar.gz
             ./memos-rs
 
             # Windows
-            7z x ${{ matrix.asset_name }}-${{ needs.prepare.outputs.version }}.zip
+            7z x ${{ matrix.asset_name }}-full-v${{ needs.prepare.outputs.version }}.zip
             .\memos-rs.exe
             ```
           draft: false
@@ -228,4 +248,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ needs.prepare.outputs.version }}
-

@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<note version="0.3" xmlns:link="http://beatniksoftware.com/tomboy/link" xmlns:size="http://beatniksoftware.com/tomboy/size" xmlns="http://beatniksoftware.com/tomboy">
+  <title>Matlab: Embracing Complexity</title>
+  <text xml:space="preserve"><note-content version="0.1">Matlab: Embracing Complexity
+
+<datetime>Tuesday, June 18, 2013 10:58 AM</datetime>
+
+<bold>Platform for Collaboration</bold>
+
+<list><list-item dir="ltr">Car Adaptive cruise control: 
+</list-item><list-item dir="ltr">Neural Imaging of Brain activity
+<list><list-item dir="ltr">Uses SPM (statistical parameter mapping)
+</list-item><list-item dir="ltr">SPM includes
+<list><list-item dir="ltr">General linear modeling
+</list-item><list-item dir="ltr">Time series analysis
+</list-item><list-item dir="ltr">Brain connectivity - between different regions
+</list-item><list-item dir="ltr">Structural Changes - pathology and archeological changes of brain.</list-item></list></list-item></list></list-item></list>
+
+<bold>Modeling &amp; Simulation:</bold>
+
+<list><list-item dir="ltr">Microgrid system - (ex. Wind Power plant control system)</list-item></list>
+
+<bold>Automation Modeling
+
+Cyber-Physical Systems
+
+</bold><list><list-item dir="ltr">a network of interacting elements with physical input &amp; output instead of as  standalone devices.
+</list-item><list-item dir="ltr">Hybrid models - Multiform time, Human In Loop (HIL), Continuous  &amp; discrete
+</list-item><list-item dir="ltr">Control Systems - Adaptive &amp; predictive cotnrol, Network control, intelligent systems
+</list-item><list-item dir="ltr">Concurrency, communication &amp; inter operability
+</list-item><list-item dir="ltr">validation &amp; verification
+</list-item><list-item dir="ltr">Autonomous car control &amp; traffic management.</list-item></list></note-content></text>
+  <last-change-date>2013-06-18T11:35:11.4343840+08:00</last-change-date>
+  <last-metadata-change-date>2015-07-11T00:32:28.7558650+08:00</last-metadata-change-date>
+  <create-date>2013-06-18T10:57:49.8614100+08:00</create-date>
+  <cursor-position>764</cursor-position>
+  <selection-bound-position>764</selection-bound-position>
+  <width>450</width>
+  <height>360</height>
+  <x>734</x>
+  <y>357</y>
+  <tags>
+    <tag>system:notebook:Vision_Project</tag>
+  </tags>
+  <open-on-startup>False</open-on-startup>
+</note>
