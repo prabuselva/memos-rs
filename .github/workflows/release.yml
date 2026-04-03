@@ -159,7 +159,7 @@ jobs:
           echo "Target: ${{ matrix.target }}"
           echo "Version: $VERSION"
           chmod +x build.sh
-          ./build.sh --lite --embed-frontend
+          ./build.sh --lite --embed-frontend --target ${{ matrix.target }}
           echo "::endgroup::"
 
       - name: Build Rust backend (Full with embedded frontend)
@@ -173,7 +173,7 @@ jobs:
           echo "Target: ${{ matrix.target }}"
           echo "Version: $VERSION"
           chmod +x build.sh
-          ./build.sh --full --embed-frontend
+          ./build.sh --full --embed-frontend --target ${{ matrix.target }}
           echo "::endgroup::"
 
       - name: Create release archive (Lite)
