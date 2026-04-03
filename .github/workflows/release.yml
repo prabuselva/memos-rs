@@ -172,19 +172,19 @@ jobs:
           which perl || echo "Perl not found in PATH"
           perl --version | head -n 2
 
-      - name: Install OpenSSL via winget (Windows)
+      - name: Install OpenSSL via Chocolatey (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
-        shell: pwsh
+        shell: bash
         run: |
-          winget install --id OpenSSL.OpenSSL -e --scope machine
+          choco install openssl -y
 
       - name: Set OpenSSL environment variables (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         shell: bash
         run: |
-          echo "OPENSSL_DIR=/c/Program Files/OpenSSL" >> $GITHUB_ENV
-          echo "OPENSSL_LIB_DIR=/c/Program Files/OpenSSL/lib" >> $GITHUB_ENV
-          echo "OPENSSL_INCLUDE_DIR=/c/Program Files/OpenSSL/include" >> $GITHUB_ENV
+          echo "OPENSSL_DIR=/c/ProgramData/chocolatey/lib/openssl/3.6.1" >> $GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=/c/ProgramData/chocolatey/lib/openssl/3.6.1/lib" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=/c/ProgramData/chocolatey/lib/openssl/3.6.1/include" >> $GITHUB_ENV
           echo "OPENSSL_NO_VENDOR=1" >> $GITHUB_ENV
 
       - name: Build Rust backend (Lite with embedded frontend)
