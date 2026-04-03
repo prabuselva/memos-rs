@@ -149,6 +149,8 @@ jobs:
         run: npm run build
 
       - name: Install Perl
+        if: ${{ matrix.os != 'macos-latest' }}
+        shell: bash
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             choco install strawberry-perl -y
