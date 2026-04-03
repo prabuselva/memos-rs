@@ -182,9 +182,9 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         shell: bash
         run: |
-          echo "OPENSSL_DIR=/c/ProgramData/chocolatey/lib/openssl/3.6.1" >> $GITHUB_ENV
-          echo "OPENSSL_LIB_DIR=/c/ProgramData/chocolatey/lib/openssl/3.6.1/lib" >> $GITHUB_ENV
-          echo "OPENSSL_INCLUDE_DIR=/c/ProgramData/chocolatey/lib/openssl/3.6.1/include" >> $GITHUB_ENV
+          echo "OPENSSL_DIR=/c/Program Files/OpenSSL" >> $GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=/c/Program Files/OpenSSL/lib" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=/c/Program Files/OpenSSL/include" >> $GITHUB_ENV
           echo "OPENSSL_NO_VENDOR=1" >> $GITHUB_ENV
 
       - name: Build Rust backend (Lite with embedded frontend)
