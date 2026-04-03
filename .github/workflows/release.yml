@@ -148,6 +148,15 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+      - name: Install Perl
+        run: |
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            choco install strawberry-perl -y
+          else
+            sudo apt-get update
+            sudo apt-get install -y perl
+          fi
+
       - name: Build Rust backend (Lite with embedded frontend)
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
@@ -234,8 +243,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ matrix.asset_name }}-lite-v${{ needs.prepare.outputs.version }}.*
-            ${{ matrix.asset_name }}-full-v${{ needs.prepare.outputs.version }}.*
+            ${{ matrix.asset_name }}-lite-${{ needs.prepare.outputs.version }}.*
+            ${{ matrix.asset_name }}-full-${{ needs.prepare.outputs.version }}.*
           tag_name: ${{ needs.prepare.outputs.version }}
           name: Release ${{ needs.prepare.outputs.version }}
           body: |
@@ -249,22 +258,22 @@ jobs:
             ### Lite Version (SQLite only)
             ```bash
             # Linux/macOS
-            tar -xzf ${{ matrix.asset_name }}-lite-v${{ needs.prepare.outputs.version }}.tar.gz
+            tar -xzf ${{ matrix.asset_name }}-lite-${{ needs.prepare.outputs.version }}.tar.gz
             ./memos-rs-lite
 
             # Windows
-            7z x ${{ matrix.asset_name }}-lite-v${{ needs.prepare.outputs.version }}.zip
+            7z x ${{ matrix.asset_name }}-lite-${{ needs.prepare.outputs.version }}.zip
             .\memos-rs-lite.exe
             ```
 
             ### Full Version (with Vector DB, embeddings, LLM)
             ```bash
             # Linux/macOS
-            tar -xzf ${{ matrix.asset_name }}-full-v${{ needs.prepare.outputs.version }}.tar.gz
+            tar -xzf ${{ matrix.asset_name }}-full-${{ needs.prepare.outputs.version }}.tar.gz
             ./memos-rs
 
             # Windows
-            7z x ${{ matrix.asset_name }}-full-v${{ needs.prepare.outputs.version }}.zip
+            7z x ${{ matrix.asset_name }}-full-${{ needs.prepare.outputs.version }}.zip
             .\memos-rs.exe
             ```
           draft: false
