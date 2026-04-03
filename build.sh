@@ -59,10 +59,10 @@ echo "Building memos-rs..."
 
 # Build frontend
 echo "Building frontend..."
-cd /home/praburaja/projects/opencode_ws/memos-rs/frontend
+cd ./frontend
 npm install
 npm run build
-cd /home/praburaja/projects/opencode_ws/memos-rs
+cd ..
 
 # Build Lite version
 if [ "$BUILD_LITE" = true ] || [ "$BUILD_BOTH" = true ]; then
