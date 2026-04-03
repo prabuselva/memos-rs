@@ -181,7 +181,19 @@ jobs:
           VERSION: ${{ needs.prepare.outputs.version }}
         shell: bash
         run: |
+          echo "::group::Debug information"
+          echo "Matrix OS: ${{ matrix.os }}"
+          echo "Target: ${{ matrix.target }}"
+          echo "Asset name: ${{ matrix.asset_name }}"
+          echo "Version: $VERSION"
+          echo "Working directory: $(pwd)"
+          echo "::endgroup::"
+          
           mkdir -p release
+          
+          echo "::group::Checking binary existence"
+          ls -la target/${{ matrix.target }}/release/* || true
+          echo "::endgroup::"
           
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             cp target/${{ matrix.target }}/release/memos-rs-lite.exe release/memos-rs-lite.exe || { echo "ERROR: Binary not found"; exit 1; }
@@ -196,7 +208,19 @@ jobs:
           VERSION: ${{ needs.prepare.outputs.version }}
         shell: bash
         run: |
+          echo "::group::Debug information"
+          echo "Matrix OS: ${{ matrix.os }}"
+          echo "Target: ${{ matrix.target }}"
+          echo "Asset name: ${{ matrix.asset_name }}"
+          echo "Version: $VERSION"
+          echo "Working directory: $(pwd)"
+          echo "::endgroup::"
+          
           mkdir -p release
+          
+          echo "::group::Checking binary existence"
+          ls -la target/${{ matrix.target }}/release/* || true
+          echo "::endgroup::"
           
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             cp target/${{ matrix.target }}/release/memos-rs.exe release/memos-rs.exe || { echo "ERROR: Binary not found"; exit 1; }
