@@ -159,14 +159,11 @@ jobs:
             sudo apt-get install -y perl
           fi
 
-      - name: Add Perl to PATH (Windows)
+      - name: Export Perl PATH (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
-        shell: pwsh
+        shell: bash
         run: |
-          $perlPath = "C:\Strawberry\perl\bin"
-          if (Test-Path $perlPath) {
-            echo "$perlPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          }
+          echo "PATH=/c/Strawberry/perl/bin:$PATH" >> $GITHUB_ENV
 
       - name: Build Rust backend (Lite with embedded frontend)
         env:
@@ -178,12 +175,9 @@ jobs:
           echo "::group::Building Rust backend (Lite)"
           echo "Target: ${{ matrix.target }}"
           echo "Version: $VERSION"
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            pwsh -File build.ps1 --lite --embed-frontend --target ${{ matrix.target }}
-          else
-            chmod +x build.sh
-            ./build.sh --lite --embed-frontend --target ${{ matrix.target }}
-          fi
+          echo "PATH: $PATH"
+          chmod +x build.sh
+          ./build.sh --lite --embed-frontend --target ${{ matrix.target }}
           echo "::endgroup::"
 
       - name: Build Rust backend (Full with embedded frontend)
@@ -196,12 +190,9 @@ jobs:
           echo "::group::Building Rust backend (Full)"
           echo "Target: ${{ matrix.target }}"
           echo "Version: $VERSION"
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            pwsh -File build.ps1 --full --embed-frontend --target ${{ matrix.target }}
-          else
-            chmod +x build.sh
-            ./build.sh --full --embed-frontend --target ${{ matrix.target }}
-          fi
+          echo "PATH: $PATH"
+          chmod +x build.sh
+          ./build.sh --full --embed-frontend --target ${{ matrix.target }}
           echo "::endgroup::"
 
       - name: Create release archive (Lite)
