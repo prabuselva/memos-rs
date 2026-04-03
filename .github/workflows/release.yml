@@ -165,6 +165,28 @@ jobs:
         run: |
           echo "PATH=/c/Strawberry/perl/bin:$PATH" >> $GITHUB_ENV
 
+      - name: Check Perl availability (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: bash
+        run: |
+          which perl || echo "Perl not found in PATH"
+          perl --version | head -n 2
+
+      - name: Install OpenSSL via winget (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: pwsh
+        run: |
+          winget install --id OpenSSL.OpenSSL -e --scope machine
+
+      - name: Set OpenSSL environment variables (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: bash
+        run: |
+          echo "OPENSSL_DIR=/c/Program Files/OpenSSL" >> $GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=/c/Program Files/OpenSSL/lib" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=/c/Program Files/OpenSSL/include" >> $GITHUB_ENV
+          echo "OPENSSL_NO_VENDOR=1" >> $GITHUB_ENV
+
       - name: Build Rust backend (Lite with embedded frontend)
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
@@ -176,6 +198,10 @@ jobs:
           echo "Target: ${{ matrix.target }}"
           echo "Version: $VERSION"
           echo "PATH: $PATH"
+          echo "OPENSSL_DIR: $OPENSSL_DIR"
+          echo "OPENSSL_LIB_DIR: $OPENSSL_LIB_DIR"
+          echo "OPENSSL_INCLUDE_DIR: $OPENSSL_INCLUDE_DIR"
+          echo "OPENSSL_NO_VENDOR: $OPENSSL_NO_VENDOR"
           chmod +x build.sh
           ./build.sh --lite --embed-frontend --target ${{ matrix.target }}
           echo "::endgroup::"
@@ -191,6 +217,10 @@ jobs:
           echo "Target: ${{ matrix.target }}"
           echo "Version: $VERSION"
           echo "PATH: $PATH"
+          echo "OPENSSL_DIR: $OPENSSL_DIR"
+          echo "OPENSSL_LIB_DIR: $OPENSSL_LIB_DIR"
+          echo "OPENSSL_INCLUDE_DIR: $OPENSSL_INCLUDE_DIR"
+          echo "OPENSSL_NO_VENDOR: $OPENSSL_NO_VENDOR"
           chmod +x build.sh
           ./build.sh --full --embed-frontend --target ${{ matrix.target }}
           echo "::endgroup::"
