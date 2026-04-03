@@ -207,6 +207,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Build Rust backend (Full with embedded frontend)
+        if: ${{ matrix.os != 'windows-latest' }}
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
@@ -253,6 +254,7 @@ jobs:
           fi
 
       - name: Create release archive (Full)
+        if: ${{ matrix.os != 'windows-latest' }}
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
         shell: bash
@@ -279,18 +281,17 @@ jobs:
             cd release && tar -czf ../${{ matrix.asset_name }}-full-v${VERSION#v}.tar.gz memos-rs
           fi
 
-      - name: Upload release assets
+      - name: Upload release assets (Lite)
         uses: softprops/action-gh-release@v1
         with:
           files: |
             ${{ matrix.asset_name }}-lite-${{ needs.prepare.outputs.version }}.*
-            ${{ matrix.asset_name }}-full-${{ needs.prepare.outputs.version }}.*
           tag_name: ${{ needs.prepare.outputs.version }}
           name: Release ${{ needs.prepare.outputs.version }}
           body: |
             ## Changes
             - Build for ${{ matrix.os }}
-            - Embedded frontend in both binaries
+            - Embedded frontend in Lite binary
             - Version: ${{ needs.prepare.outputs.version }}
 
             ## Installation
@@ -305,6 +306,27 @@ jobs:
             7z x ${{ matrix.asset_name }}-lite-${{ needs.prepare.outputs.version }}.zip
             .\memos-rs-lite.exe
             ```
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+
+      - name: Upload release assets (Full)
+        if: ${{ matrix.os != 'windows-latest' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ matrix.asset_name }}-full-${{ needs.prepare.outputs.version }}.*
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: Release ${{ needs.prepare.outputs.version }}
+          body: |
+            ## Changes
+            - Build for ${{ matrix.os }}
+            - Embedded frontend in Full binary
+            - Version: ${{ needs.prepare.outputs.version }}
+
+            ## Installation
 
             ### Full Version (with Vector DB, embeddings, LLM)
             ```bash
@@ -312,9 +334,8 @@ jobs:
             tar -xzf ${{ matrix.asset_name }}-full-${{ needs.prepare.outputs.version }}.tar.gz
             ./memos-rs
 
-            # Windows
-            7z x ${{ matrix.asset_name }}-full-${{ needs.prepare.outputs.version }}.zip
-            .\memos-rs.exe
+            # Windows (not available)
+            # Use Lite version instead
             ```
           draft: false
           prerelease: false

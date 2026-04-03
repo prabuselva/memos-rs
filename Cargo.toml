@@ -1,21 +1,21 @@
 [package]
 name = "memos-rs"
-version = "1.0.0-rc.14"
+version = "1.0.0-rc.15"
 edition = "2021"
 
 [features]
 default = ["optimize"]
 embed-frontend = ["dep:rust-embed"]
-optimize = ["dep:ndarray", "dep:num-traits", "dep:ndarray-linalg", "embeddings", "vector-db", "llm"]
+optimize = ["dep:ndarray", "dep:num-traits", "dep:ndarray-linalg", "embeddings", "vector-db", "llm", "dep:openssl-sys"]
 lite = []
 
 # Full features (default with optimizations)
 full = ["embeddings", "vector-db", "llm"]
 
 # Component features
-embeddings = ["dep:tokenizers", "dep:safetensors", "dep:ndarray", "dep:ndarray-linalg", "dep:num-traits"]
-vector-db = ["dep:qdrant-client"]
-llm = ["dep:reqwest"]
+embeddings = ["dep:tokenizers", "dep:safetensors", "dep:ndarray", "dep:ndarray-linalg", "dep:num-traits", "dep:openssl-sys"]
+vector-db = ["dep:qdrant-client", "dep:openssl-sys"]
+llm = ["dep:reqwest", "dep:openssl-sys"]
 
 [dependencies]
 axum = { version = "0.7", features = ["multipart"] }
@@ -47,7 +47,7 @@ bcrypt = "0.15"
 jsonwebtoken = "9.0"
 rand = "0.8"
 
-openssl-sys = { version = "0.9", features = ["vendored"] }
+openssl-sys = { version = "0.9", features = ["vendored"], optional = true }
 
 # Tokenizers (Rust-native, no AVX required)
 tokenizers = { version = "0.15", features = ["onig"], optional = true }
