@@ -330,13 +330,18 @@ jobs:
 
             ### Full Version (with Vector DB, embeddings, LLM)
             ```bash
-            # Linux/macOS
-            tar -xzf ${{ matrix.asset_name }}-full-${{ needs.prepare.outputs.version }}.tar.gz
+            # Linux/macOS/Windows
+            tar -xzf memos-rs-{OS}-{ARCH}-full-${{ needs.prepare.outputs.version }}.tar.gz
             ./memos-rs
+	    ```
 
-            # Windows (not available)
-            # Use Lite version instead
-            ```
+            ### Use Lite version instead (Only sqlite support)
+	    ```bash
+            # Linux/macOS/Windows
+            tar -xzf memos-rs-{OS}-{ARCH}-lite-${{ needs.prepare.outputs.version }}.tar.gz
+            ./memos-rs-lite
+	    ```
+
           draft: false
           prerelease: false
         env:
