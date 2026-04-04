@@ -65,6 +65,7 @@ case "${1:-}" in
             PATCHRC="${PATCHRC%RC*}"
         else
             RC_NUMBER=""
+	    PATCH=$PATCHRC
         fi
         ;;
     *)
@@ -83,6 +84,7 @@ esac
 
 # Construct new version string
 if [[ -n "$RC_NUMBER" ]]; then
+    echo "RC version is present"
     NEW_VERSION="$MAJOR.$MINOR.$PATCHRC"-rc."$RC_NUMBER"  # For RC versions (e.g. 1.2.3RC9)
 else
     NEW_VERSION="$MAJOR.$MINOR.$PATCH"  # For regular versions

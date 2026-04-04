@@ -1,21 +1,21 @@
 [package]
 name = "memos-rs"
-version = "1.0.0-rc.16"
+version = "1.0.0"
 edition = "2021"
 
 [features]
 default = ["optimize"]
 embed-frontend = ["dep:rust-embed"]
-optimize = ["dep:ndarray", "dep:num-traits", "dep:ndarray-linalg", "embeddings", "vector-db", "llm", "dep:openssl-sys"]
+optimize = ["dep:ndarray", "dep:num-traits", "dep:ndarray-linalg", "embeddings", "vector-db", "llm"]
 lite = []
 
 # Full features (default with optimizations)
 full = ["embeddings", "vector-db", "llm"]
 
 # Component features
-embeddings = ["dep:tokenizers", "dep:safetensors", "dep:ndarray", "dep:ndarray-linalg", "dep:num-traits", "dep:openssl-sys"]
-vector-db = ["dep:qdrant-client", "dep:openssl-sys"]
-llm = ["dep:reqwest", "dep:openssl-sys"]
+embeddings = ["dep:tokenizers", "dep:safetensors", "dep:ndarray", "dep:ndarray-linalg", "dep:num-traits"]
+vector-db = ["dep:qdrant-client"]
+llm = ["dep:reqwest"]
 
 [dependencies]
 axum = { version = "0.7", features = ["multipart"] }
@@ -47,7 +47,7 @@ bcrypt = "0.15"
 jsonwebtoken = "9.0"
 rand = "0.8"
 
-openssl-sys = { version = "0.9", features = ["vendored"], optional = true }
+
 
 # Tokenizers (Rust-native, no AVX required)
 tokenizers = { version = "0.15", features = ["onig"], optional = true }
@@ -56,7 +56,7 @@ tokenizers = { version = "0.15", features = ["onig"], optional = true }
 qdrant-client = { version = "1.7", optional = true }
 
 # For HTTP requests (model downloading)
-reqwest = { version = "0.12", features = ["blocking", "json"], optional = true }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"], optional = true }
 
 # For caching
 once_cell = "1.19"
